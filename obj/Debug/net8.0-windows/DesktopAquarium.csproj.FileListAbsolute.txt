@@ -20,3 +20,4 @@ C:\dev\DesktopAquarium\DesktopAquarium\obj\Debug\net8.0-windows\refint\DesktopAq
 C:\dev\DesktopAquarium\DesktopAquarium\obj\Debug\net8.0-windows\DesktopAquarium.pdb
 C:\dev\DesktopAquarium\DesktopAquarium\obj\Debug\net8.0-windows\DesktopAquarium.genruntimeconfig.cache
 C:\dev\DesktopAquarium\DesktopAquarium\obj\Debug\net8.0-windows\ref\DesktopAquarium.dll
+C:\dev\DesktopAquarium\DesktopAquarium\obj\Debug\net8.0-windows\DesktopAquarium.sourcelink.json
