@@ -73,6 +73,8 @@ namespace DesktopAquarium.Fish
             else 
                 _idleTimer.Start();
 
+            TopMost = _settings.AlwaysOnTop;
+
             pbMain.MouseDown += frmMain_MouseDown;
             pbMain.MouseUp += frmMain_MouseUp;
             pbMain.MouseMove += frmMain_MouseMove;
@@ -241,6 +243,18 @@ namespace DesktopAquarium.Fish
 
         #endregion
         #region Events
+
+        public void KillFish_Raised(object? sender, KillFishEventArgs e)
+        {
+            if (e.FishID != _settings.FishID)
+                return;
+
+            _moveTimer.Stop();
+            _idleGifStopTimer.Stop();
+            _idleTimer.Stop();
+            Close();
+            Dispose();
+        }
 
         private void frmMain_MouseDown(object? sender, MouseEventArgs e)
         {

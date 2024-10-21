@@ -10,23 +10,28 @@ namespace DesktopAquarium
     {
         private AquariumSettings _settings;
         private BaseSettings? _newSettings;
-        private JsonSerializerSettings _serializerSettings;
         private ImageHelper _imageHelper;
         private ImageList _fishImages;
+        private JsonSerializerSettings _serializerSettings;
+        private NameHelper _nameHelper;
 
         private int _currentFishID;
 
         private const string SettingsFilePath = @"C:\ProgramData\AquariumSettings.json";
 
-        public delegate void KillFishEventHandler(int fishID);
-        public event KillFishEventHandler KillFish;
+        public event EventHandler<KillFishEventArgs> KillFish;
+
 
         public frmMain()
         {
             InitializeComponent();
 
             _imageHelper = new ImageHelper();
+            _nameHelper = new NameHelper();
             _currentFishID = 0;
+
+            lvFishList.Columns.Add(" ", 32, HorizontalAlignment.Center);
+            lvFishList.Columns.Add("Fish Name", -2, HorizontalAlignment.Left);
 
             _fishImages = new ImageList();
             _fishImages.ImageSize = new Size(32, 32);
@@ -57,6 +62,8 @@ namespace DesktopAquarium
             }
             else
                 _settings = new();
+
+            FormClosing += frmMain_FormClosing;
         }
 
         private void AddFishToList(BaseSettings fish)
@@ -67,7 +74,7 @@ namespace DesktopAquarium
             _fishImages.Images.Add(fish.Name ?? fish.FishType.ToString(), GetIconForFish(fish.FishType));
 
             lvFishList.SmallImageList = _fishImages;
-            lvFishList.Items.Add(new ListViewItem()
+            lvFishList.Items.Add(new ListViewItem(fish.Name)
             {
                 Text = fish.Name ?? fish.FishType.ToString(),
                 Tag = fish.FishID,
@@ -94,7 +101,7 @@ namespace DesktopAquarium
             if (!int.TryParse(lvFishList.SelectedItems[0].Tag?.ToString(), out int fishID))
                 fishID = -1;
 
-            KillFish?.Invoke(fishID);
+            KillFish?.Invoke(this, new KillFishEventArgs(fishID));
 
             lvFishList.Items.Remove(lvFishList.SelectedItems[0]);
         }
@@ -150,6 +157,10 @@ namespace DesktopAquarium
                         Name = property.Name,
                         Text = (string?)property.GetValue(settings, null),
                     };
+                    if (property.Name == "Name" && textBox.Text == string.Empty)
+                    {
+                        textBox.Text = _nameHelper.GetRandomName();
+                    }
                     panel.Controls.Add(textBox);
                 }
             }
@@ -167,6 +178,7 @@ namespace DesktopAquarium
             if (_newSettings.GetType() == typeof(SharkSettings))
             {
                 var frm = new Shark((SharkSettings)_newSettings);
+                KillFish += frm.KillFish_Raised;
                 frm.Show();
             }
 
@@ -175,21 +187,16 @@ namespace DesktopAquarium
 
         public BaseSettings GetSettingsFromControls(BaseSettings settings, FlowLayoutPanel panel)
         {
-            // Iterate through all controls on the form
             foreach (Control ctrl in panel.Controls)
             {
-                // Check if the control is a NumericUpDown (for integer properties)
                 if (ctrl is NumericUpDown numericUpDown)
                 {
-                    // Use the control's name to find the corresponding property in Settings
                     var property = settings.GetType().GetProperty(numericUpDown.Name);
                     if (property != null && property.PropertyType == typeof(int))
                     {
-                        // Set the value of the property
                         property.SetValue(settings, (int)numericUpDown.Value);
                     }
                 }
-                // Check if the control is a CheckBox (for boolean properties)
                 else if (ctrl is CheckBox checkBox)
                 {
                     var property = settings.GetType().GetProperty(checkBox.Name);
@@ -198,7 +205,6 @@ namespace DesktopAquarium
                         property.SetValue(settings, checkBox.Checked);
                     }
                 }
-                // Check if the control is a TextBox (for string or other properties)
                 else if (ctrl is TextBox textBox)
                 {
                     var property = settings.GetType().GetProperty(textBox.Name);
@@ -213,7 +219,7 @@ namespace DesktopAquarium
         }
 
 
-        private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
+        private void frmMain_FormClosing(object? sender, FormClosingEventArgs e)
         {
             var settingsString = JsonConvert.SerializeObject(_settings, Formatting.Indented);
             File.WriteAllText(SettingsFilePath, settingsString);
