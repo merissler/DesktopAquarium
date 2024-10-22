@@ -22,6 +22,44 @@ namespace DesktopAquarium.Fish
         System.Windows.Forms.Timer _idleTimer;
         System.Windows.Forms.Timer _idleGifStopTimer;
 
+        public PictureBox PbMain
+        {
+            get => pbMain;
+        }
+
+        public Random Rand
+        {
+            get => _rand;
+        }
+
+        public bool IsFacingLeft
+        {
+            get => _isFacingLeft;
+        }
+
+        public Point TargetLocation
+        {
+            get => _targetLocation;
+            set => _targetLocation = value;
+        }
+
+        public System.Windows.Forms.Timer MoveTimer
+        {
+            get => _moveTimer;
+            set => _moveTimer = value;
+        }
+
+        public System.Windows.Forms.Timer IdleTimer
+        {
+            get => _idleTimer;
+            set => _idleTimer = value;
+        }
+
+        public System.Windows.Forms.Timer IdleGifStopTimer
+        {
+            get => _idleGifStopTimer;
+            set => _idleGifStopTimer = value;
+        }
 
         public byte[] SwimLGif { get; set; }
         public byte[] SwimRGif { get; set; }
@@ -48,32 +86,27 @@ namespace DesktopAquarium.Fish
             IdleLGifs = [];
             IdleRGifs = [];
 
+            ShowInTaskbar = false;
+
             _settings = settings;
             _imageHelper = new ImageHelper();
             _rand = new Random(DateTime.Now.GetHashCode());
 
-            Text = _settings.Name ?? _settings.FishType.ToString();
-
-            _moveTimer = new System.Windows.Forms.Timer() 
-            { 
-                Interval = _settings.MoveTimerInterval 
-            };
+            _moveTimer = new System.Windows.Forms.Timer();
             _moveTimer.Tick += MoveTimer_Elapsed;
 
-            _idleTimer = new System.Windows.Forms.Timer() 
-            { 
-                Interval= _settings.IdleTimerInterval 
-            };
+            _idleTimer = new System.Windows.Forms.Timer();
             _idleTimer.Tick += IdleTimer_Elapsed;
 
             _idleGifStopTimer = new System.Windows.Forms.Timer();
+            _idleGifStopTimer.Tick += IdleGifStopTimer_Elapsed;
 
             if (_settings.FollowCursor)
                 _moveTimer.Start();
             else 
                 _idleTimer.Start();
 
-            TopMost = _settings.AlwaysOnTop;
+            LoadSettings();
 
             pbMain.MouseDown += frmMain_MouseDown;
             pbMain.MouseUp += frmMain_MouseUp;
@@ -83,17 +116,43 @@ namespace DesktopAquarium.Fish
             MouseMove += frmMain_MouseMove;
         }
 
+        public void LoadSettings()
+        {
+            Text = _settings.Name ?? _settings.FishType.ToString();
+            _moveTimer.Interval = _settings.MoveTimerInterval;
+            _idleTimer.Interval = _settings.IdleTimerInterval;
+            TopMost = _settings.AlwaysOnTop;
+        }
+
+        private Rectangle GetDestinationScreen()
+        {
+            var screens = Screen.AllScreens;
+
+            Screen currentScreen = Screen.FromControl(this);
+
+            var destScreen = _rand.Next(screens.Length + (screens.Length / 2));
+            // ~33% chance to stay on the same screen
+            if (destScreen < screens.Length)
+            {
+                return screens[destScreen].WorkingArea;
+            }
+            else
+            {
+                return currentScreen.WorkingArea;
+            }
+        }
+
         #region Public Methods
 
         public void MoveToRandomLocation()
         {
             int newX, newY;
 
-            Rectangle screen = SystemInformation.VirtualScreen;
-
+            Rectangle screen;
             if (_settings.PrimaryScreenOnly)
                 screen = Screen.PrimaryScreen?.Bounds ?? SystemInformation.VirtualScreen;
-
+            else
+                screen = GetDestinationScreen(); 
             do
             {
                 newX = _rand.Next(screen.Left, screen.Right - Width);
@@ -107,13 +166,13 @@ namespace DesktopAquarium.Fish
             {
                 if (_isFacingLeft)
                     _isFacingLeft = false;
-                pbMain.Image = _imageHelper.LoadImageFromBytes(SwimRGif);
+                pbMain.Image = ImageHelper.LoadImageFromBytes(SwimRGif);
             }
             else
             {
                 if (!_isFacingLeft)
                     _isFacingLeft = true;
-                pbMain.Image = _imageHelper.LoadImageFromBytes(SwimLGif);
+                pbMain.Image = ImageHelper.LoadImageFromBytes(SwimLGif);
             }
 
             _idleTimer.Stop();
@@ -132,24 +191,25 @@ namespace DesktopAquarium.Fish
 
             if (onlyDefault)
             {
-                pbMain.Image = _imageHelper.LoadImageFromBytes(defaultIdle);
+                pbMain.Image = ImageHelper.LoadImageFromBytes(defaultIdle);
             }
             else
             {
                 var defaultOrSpecial = _rand.Next(0, 2);
                 if (defaultOrSpecial == 0)
-                    pbMain.Image = _imageHelper.LoadImageFromBytes(defaultIdle);
+                    pbMain.Image = ImageHelper.LoadImageFromBytes(defaultIdle);
                 else
                 {
                     var chance = 100 / idleList.Count;
                     var img = _rand.Next(0, 100);
                     for (int i = 0; i < idleList.Count; ++i)
                     {
-                        if (img <= chance * i)
+                        if (img <= chance * (i + 1))
                         {
                             var gifLength = _imageHelper.GetGifDuration(idleList[i]);
+                            _idleTimer.Stop();
                             _idleGifStopTimer.Interval = gifLength;
-                            pbMain.Image = _imageHelper.LoadImageFromBytes(idleList[i]);
+                            pbMain.Image = ImageHelper.LoadImageFromBytes(idleList[i]);
                             _idleGifStopTimer.Start();
                             break;
                         }
@@ -189,12 +249,12 @@ namespace DesktopAquarium.Fish
             _moveTimer.Stop();
         }
 
-        private void IdleTimer_Elapsed(object? sender, EventArgs e)
+        public void IdleTimer_Elapsed(object? sender, EventArgs e)
         {
             MoveToRandomLocation();
         }
 
-        private void MoveTimer_Elapsed(object? sender, EventArgs e)
+        public virtual void MoveTimer_Elapsed(object? sender, EventArgs e)
         {
             if (_settings.FollowCursor)
             {
@@ -217,19 +277,17 @@ namespace DesktopAquarium.Fish
                 if (!_settings.FollowCursor)
                 {
                     _moveTimer.Stop();
-                    SetIdleImage(true);
                     _idleTimer.Start();
+                    SetIdleImage(false);
                 }
             }
         }
 
         private void IdleGifStopTimer_Elapsed(object? sender, EventArgs e)
         {
-            if (_isFacingLeft)
-                pbMain.Image = _imageHelper.LoadImageFromBytes(DefaultIdleLGif);
-            else
-                pbMain.Image = _imageHelper.LoadImageFromBytes(DefaultIdleRGif);
+            SetIdleImage(true);
 
+            _idleGifStopTimer.Stop();
             if (_idleGifStopTimer.Interval <= _settings.IdleTimerInterval)
             {
                 _idleTimer.Interval = _settings.IdleTimerInterval - _idleGifStopTimer.Interval;
@@ -237,7 +295,10 @@ namespace DesktopAquarium.Fish
             }
             else
             {
-                _moveTimer.Start();
+                if (!_settings.FollowCursor)
+                    MoveToRandomLocation();
+                else
+                    _moveTimer.Start();
             }
         }
 
@@ -256,6 +317,15 @@ namespace DesktopAquarium.Fish
             Dispose();
         }
 
+        public void SettingsChanged_Raised(object? sender, SettingsChangedEventArgs e)
+        {
+            if (e.FishID != _settings.FishID)
+                return;
+
+            _settings = e.NewSettings;
+            LoadSettings();
+        }
+
         private void frmMain_MouseDown(object? sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -263,9 +333,9 @@ namespace DesktopAquarium.Fish
                 _moveTimer.Stop();
                 _idleTimer.Stop();
                 if (_isFacingLeft)
-                    pbMain.Image = _imageHelper.LoadImageFromBytes(DragLGif);
+                    pbMain.Image = ImageHelper.LoadImageFromBytes(DragLGif);
                 else
-                    pbMain.Image = _imageHelper.LoadImageFromBytes(DragRGif);
+                    pbMain.Image = ImageHelper.LoadImageFromBytes(DragRGif);
                 
                 _isDragging = true;
                 _dragCursor = Cursor.Position;
@@ -287,7 +357,7 @@ namespace DesktopAquarium.Fish
             if (e.Button == MouseButtons.Left)
             {
                 _isDragging = false;
-                SetIdleImage(true);
+                SetIdleImage(false);
                 if (_settings?.FollowCursor ?? false)
                     _moveTimer.Start();
                 else

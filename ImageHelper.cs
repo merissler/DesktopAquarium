@@ -14,7 +14,16 @@ namespace DesktopAquarium
         {
         }
 
-        public Image LoadImageFromBytes(byte[] gifBytes)
+        public static Icon? LoadIconFromBytes(byte[] iconBytes)
+        {
+            if (iconBytes == null)
+                return null;
+
+            using MemoryStream ms = new MemoryStream(iconBytes);
+            return new Icon(ms);
+        }
+
+        public static Image LoadImageFromBytes(byte[] gifBytes)
         {
             var memoryStream = new MemoryStream(gifBytes);
 
@@ -44,7 +53,8 @@ namespace DesktopAquarium
                     totalDuration += frameDelay;
                 }
 
-                return totalDuration;
+                // totalDuration is in 1/100ths of a second
+                return totalDuration * 10;
             }
         }
     }

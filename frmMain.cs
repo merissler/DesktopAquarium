@@ -9,7 +9,8 @@ namespace DesktopAquarium
     public partial class frmMain : Form
     {
         private AquariumSettings _settings;
-        private BaseSettings? _newSettings;
+        private BaseSettings? _newFish;
+        private BaseSettings? _selectedFish;
         private ImageHelper _imageHelper;
         private ImageList _fishImages;
         private JsonSerializerSettings _serializerSettings;
@@ -20,7 +21,7 @@ namespace DesktopAquarium
         private const string SettingsFilePath = @"C:\ProgramData\AquariumSettings.json";
 
         public event EventHandler<KillFishEventArgs> KillFish;
-
+        public event EventHandler<SettingsChangedEventArgs> SettingsChanged;
 
         public frmMain()
         {
@@ -30,7 +31,7 @@ namespace DesktopAquarium
             _nameHelper = new NameHelper();
             _currentFishID = 0;
 
-            lvFishList.Columns.Add(" ", 32, HorizontalAlignment.Center);
+            lvFishList.Columns.Add(" ", 40, HorizontalAlignment.Left);
             lvFishList.Columns.Add("Fish Name", -2, HorizontalAlignment.Left);
 
             _fishImages = new ImageList();
@@ -55,6 +56,7 @@ namespace DesktopAquarium
                     {
                         _currentFishID = Math.Max(_currentFishID, fish.FishID + 1);
                         AddFishToList(fish);
+                        OpenFishForm(fish);
                     }
                 }
                 else
@@ -74,12 +76,14 @@ namespace DesktopAquarium
             _fishImages.Images.Add(fish.Name ?? fish.FishType.ToString(), GetIconForFish(fish.FishType));
 
             lvFishList.SmallImageList = _fishImages;
-            lvFishList.Items.Add(new ListViewItem(fish.Name)
+            var newItem = new ListViewItem(fish.Name)
             {
-                Text = fish.Name ?? fish.FishType.ToString(),
+                Text = string.Empty,
                 Tag = fish.FishID,
                 ImageKey = fish.Name ?? fish.FishType.ToString()
-            });
+            };
+            newItem.SubItems.Add(fish.Name);
+            lvFishList.Items.Add(newItem);
         }
 
         private Image GetIconForFish(FishType fish)
@@ -87,23 +91,10 @@ namespace DesktopAquarium
             switch (fish)
             {
                 case FishType.Shark:
-                    return _imageHelper.LoadImageFromBytes(Properties.Resources.SharkIcon);
+                    return ImageHelper.LoadImageFromBytes(Properties.Resources.SharkIcon);
                 default:
-                    return _imageHelper.LoadImageFromBytes(Properties.Resources.NullIcon);
+                    return ImageHelper.LoadImageFromBytes(Properties.Resources.NullIcon);
             }
-        }
-
-        private void llRemoveFish_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            if (lvFishList.SelectedItems.Count == 0)
-                return;
-
-            if (!int.TryParse(lvFishList.SelectedItems[0].Tag?.ToString(), out int fishID))
-                fishID = -1;
-
-            KillFish?.Invoke(this, new KillFishEventArgs(fishID));
-
-            lvFishList.Items.Remove(lvFishList.SelectedItems[0]);
         }
 
         private void CreateControlsForFish(BaseSettings settings, FlowLayoutPanel panel)
@@ -152,8 +143,8 @@ namespace DesktopAquarium
                         AutoSize = true,
                     };
                     panel.Controls.Add(label);
-                    TextBox textBox = new() 
-                    { 
+                    TextBox textBox = new()
+                    {
                         Name = property.Name,
                         Text = (string?)property.GetValue(settings, null),
                     };
@@ -168,21 +159,29 @@ namespace DesktopAquarium
 
         private void CreateNewFish(BaseSettings settingsToUse)
         {
-            if (_newSettings == null)
+            if (settingsToUse == null)
                 return;
 
-            _newSettings = GetSettingsFromControls(_newSettings, flpNewSettings);
-            
+            settingsToUse = GetSettingsFromControls(settingsToUse, flpNewSettings);
+
             AddFishToList(settingsToUse);
 
-            if (_newSettings.GetType() == typeof(SharkSettings))
+            _settings.FishList.Add(settingsToUse);
+
+            OpenFishForm(settingsToUse);
+
+            _newFish = null;
+        }
+
+        private void OpenFishForm(BaseSettings settingsToUse)
+        {
+            if (settingsToUse.GetType() == typeof(SharkSettings))
             {
-                var frm = new Shark((SharkSettings)_newSettings);
+                var frm = new Shark((SharkSettings)settingsToUse);
                 KillFish += frm.KillFish_Raised;
+                SettingsChanged += frm.SettingsChanged_Raised;
                 frm.Show();
             }
-
-            _newSettings = null;
         }
 
         public BaseSettings GetSettingsFromControls(BaseSettings settings, FlowLayoutPanel panel)
@@ -218,24 +217,71 @@ namespace DesktopAquarium
             return settings;
         }
 
+        #region Events
 
         private void frmMain_FormClosing(object? sender, FormClosingEventArgs e)
         {
-            var settingsString = JsonConvert.SerializeObject(_settings, Formatting.Indented);
+            var settingsString = JsonConvert.SerializeObject(_settings, _serializerSettings);
             File.WriteAllText(SettingsFilePath, settingsString);
+        }
+
+        private void llRemoveFish_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            if (lvFishList.SelectedItems.Count == 0)
+                return;
+
+            if (!int.TryParse(lvFishList.SelectedItems[0].Tag?.ToString(), out int fishID))
+                fishID = -1;
+
+            KillFish?.Invoke(this, new KillFishEventArgs(fishID));
+
+            lvFishList.Items.Remove(lvFishList.SelectedItems[0]);
+
+            for (int i = 0; i < _settings.FishList.Count; i++)
+            {
+                if (_settings.FishList[i].FishID == fishID)
+                {
+                    _settings.FishList.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        private void lvFishList_ItemSelectionChanged(object? sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            if (lvFishList.SelectedItems.Count == 0)
+                return;
+
+            var selectedFish = e.Item;
+            if (selectedFish == null)
+                return;
+
+            if (!int.TryParse(selectedFish.Tag?.ToString(), out int fishID))
+                fishID = -1;
+
+            foreach (BaseSettings fish in _settings.FishList)
+            {
+                if (fish.FishID == fishID)
+                {
+                    CreateControlsForFish(fish, flpSelectedSettings);
+                    _selectedFish = fish;
+                    break;
+                }
+            }
         }
 
         private void cmbFishType_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            if (_newSettings != null)
+            if (_newFish != null)
             {
-                if (MessageBox.Show("This new fish has not been saved. Are you sure you want to lose your changes?", "Unsaved Changes", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show("This new fish has not been saved. Do you want to save your changes?", "Unsaved Changes", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    CreateNewFish(_newSettings);
+                    CreateNewFish(_newFish);
                 }
                 else
-                { 
-                    _newSettings = null; 
+                {
+                    _newFish = null;
+                    flpNewSettings.Controls.Clear();
                 }
             }
             FishType? type = cmbFishType.SelectedItem as FishType?;
@@ -245,8 +291,8 @@ namespace DesktopAquarium
             switch (type)
             {
                 case FishType.Shark:
-                    _newSettings = new SharkSettings();
-                    CreateControlsForFish(_newSettings, flpNewSettings);
+                    _newFish = new SharkSettings();
+                    CreateControlsForFish(_newFish, flpNewSettings);
                     break;
                 default:
                     return;
@@ -271,13 +317,40 @@ namespace DesktopAquarium
             if (type == null)
                 return;
 
-            if (type == (FishType)(-1) || _newSettings == null)
+            if (type == (FishType)(-1) || _newFish == null)
             {
                 MessageBox.Show("There is no new fish loaded.");
                 return;
             }
 
-            CreateNewFish(_newSettings);
+            CreateNewFish(_newFish);
         }
+
+        private void btnSaveSettings_Click(object sender, EventArgs e)
+        {
+            if (flpSelectedSettings.Controls.Count == 0 || _selectedFish == null)
+            {
+                MessageBox.Show("No fish is selected.");
+                return;
+            }
+
+            _selectedFish = GetSettingsFromControls(_selectedFish, flpSelectedSettings);
+
+            for (int i = 0; i < _settings.FishList.Count; ++i)
+            {
+                if (_settings.FishList[i].FishID == _selectedFish.FishID)
+                {
+                    _settings.FishList[i] = _selectedFish;
+                    break;
+                }
+            }
+            SettingsChanged?.Invoke(this, new SettingsChangedEventArgs(_selectedFish, _selectedFish.FishID));
+            _selectedFish = null;
+            flpSelectedSettings.Controls.Clear();
+            lvFishList.SelectedItems.Clear();
+            Application.DoEvents();
+        }
+
+        #endregion
     }
 }

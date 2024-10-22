@@ -148,10 +148,10 @@
   <data name="SharkIdle1R" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SharkIdle1R.gif;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="SharkIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SharkIcon.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="NullIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NullIcon.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="SharkIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SharkIcon.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

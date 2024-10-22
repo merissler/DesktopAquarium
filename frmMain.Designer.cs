@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            ListViewItem listViewItem1 = new ListViewItem("");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             lvFishList = new ListView();
             label1 = new Label();
@@ -53,14 +52,15 @@
             lvFishList.BackColor = Color.FromArgb(0, 105, 228);
             lvFishList.BorderStyle = BorderStyle.None;
             lvFishList.FullRowSelect = true;
-            lvFishList.Items.AddRange(new ListViewItem[] { listViewItem1 });
             lvFishList.Location = new Point(19, 133);
             lvFishList.Margin = new Padding(5, 6, 5, 6);
+            lvFishList.MultiSelect = false;
             lvFishList.Name = "lvFishList";
             lvFishList.Size = new Size(296, 694);
             lvFishList.TabIndex = 0;
             lvFishList.UseCompatibleStateImageBehavior = false;
             lvFishList.View = View.Details;
+            lvFishList.ItemSelectionChanged += lvFishList_ItemSelectionChanged;
             // 
             // label1
             // 
@@ -192,6 +192,7 @@
             btnSaveSettings.TabIndex = 4;
             btnSaveSettings.Text = "Save New Settings";
             btnSaveSettings.UseVisualStyleBackColor = false;
+            btnSaveSettings.Click += btnSaveSettings_Click;
             // 
             // label5
             // 
