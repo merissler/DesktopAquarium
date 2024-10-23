@@ -35,6 +35,7 @@ namespace DesktopAquarium.Fish
         public bool IsFacingLeft
         {
             get => _isFacingLeft;
+            set => _isFacingLeft = value;
         }
 
         public Point TargetLocation
@@ -59,6 +60,11 @@ namespace DesktopAquarium.Fish
         {
             get => _idleGifStopTimer;
             set => _idleGifStopTimer = value;
+        }
+
+        public Point FormCenter
+        {
+            get => new Point(Left + Width / 2, Top + Height / 2);
         }
 
         public byte[] SwimLGif { get; set; }
@@ -114,6 +120,14 @@ namespace DesktopAquarium.Fish
             MouseDown += frmMain_MouseDown;
             MouseUp += frmMain_MouseUp;
             MouseMove += frmMain_MouseMove;
+        }
+
+        public void SetFormDimensions(int width, int height)
+        {
+            Width = width;
+            Height = height;
+            pbMain.Width = width;
+            pbMain.Height = height;
         }
 
         public void LoadSettings()
@@ -221,35 +235,7 @@ namespace DesktopAquarium.Fish
         #endregion
         #region Timers
 
-        public void StartIdleTimer()
-        {
-            if (_idleTimer == null)
-                return;
-            _idleTimer.Start();
-        }
-
-        public void StopIdleTimer()
-        {
-            if (_idleTimer == null)
-                return;
-            _idleTimer.Stop();
-        }
-
-        public void StartMoveTimer()
-        {
-            if (_moveTimer == null) 
-                return;
-            _moveTimer.Start();
-        }
-
-        public void StopMoveTimer()
-        {
-            if (_moveTimer == null)
-                return;
-            _moveTimer.Stop();
-        }
-
-        public void IdleTimer_Elapsed(object? sender, EventArgs e)
+        public virtual void IdleTimer_Elapsed(object? sender, EventArgs e)
         {
             MoveToRandomLocation();
         }
@@ -260,9 +246,9 @@ namespace DesktopAquarium.Fish
             {
                 _targetLocation = Cursor.Position;
             }
-
-            int deltaX = _targetLocation.X - Location.X;
-            int deltaY = _targetLocation.Y - Location.Y;
+            var formCenter = FormCenter;
+            int deltaX = _targetLocation.X - formCenter.X;
+            int deltaY = _targetLocation.Y - formCenter.Y;
 
             // Move the form 5 pixels closer to the target
             if (Math.Abs(deltaX) > 5 || Math.Abs(deltaY) > 5)
@@ -305,7 +291,7 @@ namespace DesktopAquarium.Fish
         #endregion
         #region Events
 
-        public void KillFish_Raised(object? sender, KillFishEventArgs e)
+        public virtual void KillFish_Raised(object? sender, KillFishEventArgs e)
         {
             if (e.FishID != _settings.FishID)
                 return;
@@ -317,7 +303,7 @@ namespace DesktopAquarium.Fish
             Dispose();
         }
 
-        public void SettingsChanged_Raised(object? sender, SettingsChangedEventArgs e)
+        public virtual void SettingsChanged_Raised(object? sender, SettingsChangedEventArgs e)
         {
             if (e.FishID != _settings.FishID)
                 return;

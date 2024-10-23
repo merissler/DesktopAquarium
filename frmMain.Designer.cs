@@ -43,6 +43,7 @@
             btnSaveSettings = new Button();
             label5 = new Label();
             flpSelectedSettings = new FlowLayoutPanel();
+            llCredits = new LinkLabel();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             SuspendLayout();
@@ -212,12 +213,25 @@
             flpSelectedSettings.Size = new Size(696, 292);
             flpSelectedSettings.TabIndex = 2;
             // 
+            // llCredits
+            // 
+            llCredits.AutoSize = true;
+            llCredits.Font = new Font("Segoe UI", 12F);
+            llCredits.Location = new Point(1181, 830);
+            llCredits.Name = "llCredits";
+            llCredits.Size = new Size(59, 21);
+            llCredits.TabIndex = 0;
+            llCredits.TabStop = true;
+            llCredits.Text = "Credits";
+            llCredits.LinkClicked += llCredits_LinkClicked;
+            // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(11F, 28F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(0, 148, 255);
-            ClientSize = new Size(1259, 849);
+            ClientSize = new Size(1259, 857);
+            Controls.Add(llCredits);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
             Controls.Add(llRemoveFish);
@@ -254,5 +268,6 @@
         private GroupBox groupBox2;
         private Label label5;
         private FlowLayoutPanel flpSelectedSettings;
+        private LinkLabel llCredits;
     }
 }

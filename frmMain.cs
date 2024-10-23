@@ -351,6 +351,12 @@ namespace DesktopAquarium
             Application.DoEvents();
         }
 
+        private void llCredits_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            var frm = new frmCredit();
+            frm.Show();
+        }
+
         #endregion
     }
 }

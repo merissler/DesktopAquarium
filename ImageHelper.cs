@@ -32,6 +32,17 @@ namespace DesktopAquarium
             return originalImage;
         }
 
+        public static (int width, int height) GetImageDimensions(byte[] gifBytes)
+        {
+            using (MemoryStream ms = new MemoryStream(gifBytes))
+            {
+                using (Image gifImage = Image.FromStream(ms))
+                {
+                    return (gifImage.Width, gifImage.Height);
+                }
+            }
+        }
+
         public int GetGifDuration(byte[] gifBytes)
         {
             using MemoryStream ms = new MemoryStream(gifBytes);

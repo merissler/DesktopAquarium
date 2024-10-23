@@ -73,6 +73,26 @@ namespace DesktopAquarium.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] SharkChase {
+            get {
+                object obj = ResourceManager.GetObject("SharkChase", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] SharkChaseEnd {
+            get {
+                object obj = ResourceManager.GetObject("SharkChaseEnd", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] SharkChaseL {
             get {
                 object obj = ResourceManager.GetObject("SharkChaseL", resourceCulture);

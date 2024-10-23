@@ -154,4 +154,10 @@
   <data name="SharkIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SharkIcon.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="SharkChase" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\chase.wav;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="SharkChaseEnd" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\chase_end.wav;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>
