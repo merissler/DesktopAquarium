@@ -51,7 +51,7 @@ namespace DesktopAquarium.Fish
                 if (!_settings.CursorChompEnabled)
                 {
                     _isChasing = false;
-                    _player.Stop();
+                    _player?.Stop();
                 }
             }
         }
