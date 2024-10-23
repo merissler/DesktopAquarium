@@ -1,4 +1,4 @@
-﻿using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 
 using DesktopAquarium.Settings;
 
@@ -133,8 +133,8 @@ namespace DesktopAquarium.Fish
         public void LoadSettings()
         {
             Text = _settings.Name ?? _settings.FishType.ToString();
-            _moveTimer.Interval = _settings.MoveTimerInterval;
-            _idleTimer.Interval = _settings.IdleTimerInterval;
+            _moveTimer.Interval = _settings.SharkMoveSpeed;
+            _idleTimer.Interval = _settings.SharkIdleTimeInMilliseconds;
             TopMost = _settings.AlwaysOnTop;
         }
 
@@ -274,9 +274,9 @@ namespace DesktopAquarium.Fish
             SetIdleImage(true);
 
             _idleGifStopTimer.Stop();
-            if (_idleGifStopTimer.Interval <= _settings.IdleTimerInterval)
+            if (_idleGifStopTimer.Interval <= _settings.SharkIdleTimeInMilliseconds)
             {
-                _idleTimer.Interval = _settings.IdleTimerInterval - _idleGifStopTimer.Interval;
+                _idleTimer.Interval = _settings.SharkIdleTimeInMilliseconds - _idleGifStopTimer.Interval;
                 _idleTimer.Start();
             }
             else
