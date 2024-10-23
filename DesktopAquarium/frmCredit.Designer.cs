@@ -1,4 +1,4 @@
-﻿namespace DesktopAquarium
+namespace DesktopAquarium
 {
     partial class frmCredit
     {
@@ -40,6 +40,8 @@
             label4 = new Label();
             label5 = new Label();
             label6 = new Label();
+            label7 = new Label();
+            label8 = new Label();
             SuspendLayout();
             // 
             // linkLabel1
@@ -146,9 +148,9 @@
             label5.AutoSize = true;
             label5.Location = new Point(12, 256);
             label5.Name = "label5";
-            label5.Size = new Size(246, 28);
+            label5.Size = new Size(70, 28);
             label5.TabIndex = 9;
-            label5.Text = "Tester: Austin (Braga_Rhun)";
+            label5.Text = "Testers";
             // 
             // label6
             // 
@@ -161,12 +163,32 @@
             label6.Text = "Credits";
             label6.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(12, 284);
+            label7.Name = "label7";
+            label7.Size = new Size(150, 28);
+            label7.TabIndex = 11;
+            label7.Text = "Austin Sensenig";
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(12, 321);
+            label8.Name = "label8";
+            label8.Size = new Size(133, 28);
+            label8.TabIndex = 12;
+            label8.Text = "Japheth Beiler";
+            // 
             // frmCredit
             // 
             AutoScaleDimensions = new SizeF(11F, 28F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(0, 148, 255);
             ClientSize = new Size(601, 556);
+            Controls.Add(label8);
+            Controls.Add(label7);
             Controls.Add(label6);
             Controls.Add(label5);
             Controls.Add(label4);
@@ -200,5 +222,7 @@
         private Label label4;
         private Label label5;
         private Label label6;
+        private Label label7;
+        private Label label8;
     }
 }
