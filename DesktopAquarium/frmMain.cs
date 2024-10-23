@@ -356,7 +356,6 @@ namespace DesktopAquarium
             var frm = new frmCredit();
             frm.Show();
         }
-
         #endregion
     }
 }
