@@ -97,6 +97,28 @@ namespace DesktopAquarium
             }
         }
 
+
+        public string AddSpacesBeforeCapitals(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            var result = new System.Text.StringBuilder();
+            char previousChar = '\0';
+
+            foreach (char ch in input)
+            {
+                if (char.IsUpper(ch) && result.Length > 0 && !char.IsUpper(previousChar))
+                {
+                    result.Append(' ');
+                }
+                result.Append(ch);
+                previousChar = ch;
+            }
+
+            return result.ToString();
+        }
+
         private void CreateControlsForFish(BaseSettings settings, FlowLayoutPanel panel)
         {
             Type objType = settings.GetType();
@@ -111,7 +133,7 @@ namespace DesktopAquarium
                 {
                     Label label = new Label
                     {
-                        Text = property.Name,
+                        Text = AddSpacesBeforeCapitals(property.Name),
                         AutoSize = true,
                     };
                     panel.Controls.Add(label);
@@ -129,7 +151,7 @@ namespace DesktopAquarium
                     CheckBox checkBox = new()
                     {
                         Name = property.Name,
-                        Text = property.Name,
+                        Text = AddSpacesBeforeCapitals(property.Name),
                         AutoSize = true,
                         Checked = (bool?)property.GetValue(settings, null) ?? false
                     };
@@ -139,7 +161,7 @@ namespace DesktopAquarium
                 {
                     Label label = new Label
                     {
-                        Text = property.Name,
+                        Text = AddSpacesBeforeCapitals(property.Name),
                         AutoSize = true,
                     };
                     panel.Controls.Add(label);
