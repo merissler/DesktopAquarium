@@ -326,6 +326,7 @@ namespace DesktopAquarium
             }
 
             CreateNewFish(_newFish);
+            flpNewSettings.Controls.Clear();
         }
 
         private void btnSaveSettings_Click(object sender, EventArgs e)
