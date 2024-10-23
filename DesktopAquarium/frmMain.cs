@@ -292,6 +292,8 @@ namespace DesktopAquarium
             {
                 case FishType.Shark:
                     _newFish = new SharkSettings();
+                    _currentFishID++;
+                    _newFish.FishID = _currentFishID;
                     CreateControlsForFish(_newFish, flpNewSettings);
                     break;
                 default:
