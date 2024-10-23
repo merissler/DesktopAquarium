@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,8 +9,8 @@ namespace DesktopAquarium.Settings
     public class BaseSettings
     {
         public int FishID { get; set; }
-        public int MoveTimerInterval { get; set; }
-        public int IdleTimerInterval { get; set; }
+        public int SharkMoveSpeed { get; set; }
+        public int SharkIdleTimeInMilliseconds { get; set; }
         public bool AlwaysOnTop { get; set; }
         public bool FollowCursor { get; set; }
         public bool PrimaryScreenOnly { get; set; }
@@ -22,8 +22,8 @@ namespace DesktopAquarium.Settings
 
         public BaseSettings()
         {
-            MoveTimerInterval = DefaultMoveTimerInterval;
-            IdleTimerInterval = DefaultIdleTimerInterval;
+            SharkMoveSpeed = DefaultMoveTimerInterval;
+            SharkIdleTimeInMilliseconds = DefaultIdleTimerInterval;
         }
     }
 }
